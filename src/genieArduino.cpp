@@ -47,6 +47,7 @@
 #include "genieArduino.h"
 #include <math.h>
 #include <string.h>
+#include <type_traits>
 
 #define DEC 10
 #define HEX 16
@@ -243,7 +244,7 @@ uint16_t Genie::DoEvents (bool DoHandler) {
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMBYTES);
                     break;
-   
+
                 case GENIEM_REPORT_DBYTES:
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMDBYTES);
@@ -280,7 +281,7 @@ uint16_t Genie::DoEvents (bool DoHandler) {
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMBYTES);
                     break;
-   
+
                 case GENIEM_REPORT_DBYTES:
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMDBYTES);
@@ -308,7 +309,7 @@ uint16_t Genie::DoEvents (bool DoHandler) {
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMBYTES);
                     break;
-   
+
                 case GENIEM_REPORT_DBYTES:
                     magicByte = 0;
                     PushLinkState(GENIE_LINK_RXMDBYTES);
@@ -376,7 +377,7 @@ uint16_t Genie::DoEvents (bool DoHandler) {
     // trigger the byte or double-byte handler to receive
     // the rest of the data.
     //
-    if (GetLinkState() == GENIE_LINK_RXMBYTES || 
+    if (GetLinkState() == GENIE_LINK_RXMBYTES ||
         GetLinkState() == GENIE_LINK_RXMDBYTES) {
 
         switch(magicByte) {
@@ -419,7 +420,7 @@ uint16_t Genie::DoEvents (bool DoHandler) {
         }
         return GENIE_EVENT_RXCHAR;
     }
-    return GENIE_EVENT_RXCHAR; 
+    return GENIE_EVENT_RXCHAR;
 }
 
 //////////////////////// Genie::Getchar //////////////////////////
@@ -550,7 +551,7 @@ bool Genie::EnqueueEvent (uint8_t * data) {
         int i, j ;
         bool fnd=false ;
         j = EventQueue.wr_index ;
-        for (i = EventQueue.n_events; i > 0; i--) 
+        for (i = EventQueue.n_events; i > 0; i--)
         {
             j-- ;
             if (j < 0)
@@ -770,8 +771,8 @@ uint16_t Genie::WriteStr(uint16_t index, const __FlashStringHelper *ifsh){
 		len++;
 		if (d == 0) break;
 	}
-  
- 
+
+
 	char arr[len];
 	int x = 0;
 	while (1) {
@@ -781,7 +782,7 @@ uint16_t Genie::WriteStr(uint16_t index, const __FlashStringHelper *ifsh){
 		if (c == 0) break;
 	}
 	WriteStr(index, arr);
-	return 0;	
+	return 0;
 }
 #endif
 
@@ -791,14 +792,14 @@ uint16_t Genie::WriteStr(uint16_t index, const String &s){
 	char arr[len + 1];
 	s.toCharArray(arr,len + 1);
 	WriteStr(index, arr);
-	return 0;	
+	return 0;
 }
 
 
-uint16_t Genie::WriteStr (uint16_t index, long n) { 
+uint16_t Genie::WriteStr (uint16_t index, long n) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	long N = n;
 	n = abs(n);
 
@@ -810,22 +811,22 @@ uint16_t Genie::WriteStr (uint16_t index, long n) {
 		char c = m - 10 * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-	
+
 	if (N < 0) {
 		*--str = '-';
 	}
-	
+
 	WriteStr(index, str);
 
-	
+
 
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, long n, int base) { 
+uint16_t Genie::WriteStr (uint16_t index, long n, int base) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	long N;
 	*str = '\0';
 	if(n>=0)
@@ -837,23 +838,23 @@ uint16_t Genie::WriteStr (uint16_t index, long n, int base) {
 			N = n;
 			n = abs(n);
 		}
-	
+
 		do {
 			unsigned long m = n;
 			n /= base;
 			char c = m - base * n;
 			*--str = c < 10 ? c + '0' : c + 'A' - 10;
 		} while(n);
-		
+
 		if(base == 10)
 		{
 			if (N < 0) {
 				*--str = '-';
 			}
 		}
-			
+
 	}
-	
+
 	else if(n<0)
 	{
 		unsigned long n2 = (unsigned long)n;
@@ -864,25 +865,25 @@ uint16_t Genie::WriteStr (uint16_t index, long n, int base) {
 		char c = m - base2 * n2;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 		} while(n2);
-		
+
 	}
-	
-	
+
+
     WriteStr(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, int n) { 
+uint16_t Genie::WriteStr (uint16_t index, int n) {
 	WriteStr (index, (long) n);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, int n, int base) { 
+uint16_t Genie::WriteStr (uint16_t index, int n, int base) {
 	WriteStr (index, (long) n, base);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, unsigned long n) { 
+uint16_t Genie::WriteStr (uint16_t index, unsigned long n) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
 
@@ -894,15 +895,15 @@ uint16_t Genie::WriteStr (uint16_t index, unsigned long n) {
 		char c = m - 10 * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-	
+
 	WriteStr(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, unsigned long n, int base) { 
+uint16_t Genie::WriteStr (uint16_t index, unsigned long n, int base) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	*str = '\0';
 
 	// prevent crash if called with base == 1
@@ -913,26 +914,26 @@ uint16_t Genie::WriteStr (uint16_t index, unsigned long n, int base) {
 		char c = m - base * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-				
+
     WriteStr(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, unsigned int n) { 
+uint16_t Genie::WriteStr (uint16_t index, unsigned int n) {
 	WriteStr (index, (unsigned long) n);
 	return 0;
 }
 
-uint16_t Genie::WriteStr (uint16_t index, unsigned n, int base) { 
+uint16_t Genie::WriteStr (uint16_t index, unsigned n, int base) {
 	WriteStr (index, (unsigned long) n, base);
 	return 0;
 }
 
 
-uint16_t Genie::WriteStr (uint16_t index, double number, int digits) { 
+uint16_t Genie::WriteStr (uint16_t index, double number, int digits) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	*str = '\0';  
+	*str = '\0';
 
 	double number2 = number;
 	if (number < 0.0)
@@ -959,13 +960,13 @@ uint16_t Genie::WriteStr (uint16_t index, double number, int digits) {
 	int toPrint = int(remainder);
 	char c = toPrint + 48;
 	*str++ = c;
-	remainder -= toPrint; 
+	remainder -= toPrint;
 	}
 	str = &buf[sizeof(buf) - 1 - digits];
 	if (digits > 0) {
 	*--str = '.';
 	}
-	// Extract the integer part of the number and print it  
+	// Extract the integer part of the number and print it
 	do {
 	unsigned long m = int_part;
 	int_part /= 10;
@@ -1077,7 +1078,7 @@ uint16_t Genie::WriteInhLabel(uint16_t index, const __FlashStringHelper *ifsh){
 		len++;
 		if (d == 0) break;
 	}
-  
+
 	char arr[len];
 	int x = 0;
 	while (1) {
@@ -1087,7 +1088,7 @@ uint16_t Genie::WriteInhLabel(uint16_t index, const __FlashStringHelper *ifsh){
 		if (c == 0) break;
 	}
 	WriteInhLabel(index, arr);
-	return 0;	
+	return 0;
 }
 #endif
 
@@ -1097,14 +1098,14 @@ uint16_t Genie::WriteInhLabel(uint16_t index, const String &s){
 	char arr[len + 1];
 	s.toCharArray(arr,len + 1);
 	WriteInhLabel(index, arr);
-	return 0;	
+	return 0;
 }
 
 
-uint16_t Genie::WriteInhLabel (uint16_t index, long n) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, long n) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	long N = n;
 	n = abs(n);
 
@@ -1116,20 +1117,20 @@ uint16_t Genie::WriteInhLabel (uint16_t index, long n) {
 		char c = m - 10 * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-	
+
 	if (N < 0) {
 		*--str = '-';
 	}
-	
+
 	WriteInhLabel(index, str);
 
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, long n, int base) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, long n, int base) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	long N;
 	*str = '\0';
 	if(n>=0)
@@ -1141,23 +1142,23 @@ uint16_t Genie::WriteInhLabel (uint16_t index, long n, int base) {
 			N = n;
 			n = abs(n);
 		}
-	
+
 		do {
 			unsigned long m = n;
 			n /= base;
 			char c = m - base * n;
 			*--str = c < 10 ? c + '0' : c + 'A' - 10;
 		} while(n);
-		
+
 		if(base == 10)
 		{
 			if (N < 0) {
 				*--str = '-';
 			}
 		}
-			
+
 	}
-	
+
 	else if(n<0)
 	{
 		unsigned long n2 = (unsigned long)n;
@@ -1168,24 +1169,24 @@ uint16_t Genie::WriteInhLabel (uint16_t index, long n, int base) {
 		char c = m - base2 * n2;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 		} while(n2);
-		
+
 	}
-	
+
     WriteInhLabel(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, int n) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, int n) {
 	WriteInhLabel (index, (long) n);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, int n, int base) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, int n, int base) {
 	WriteInhLabel (index, (long) n, base);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
 
@@ -1197,15 +1198,15 @@ uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n) {
 		char c = m - 10 * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-	
+
 	WriteInhLabel(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n, int base) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n, int base) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	
+
 	*str = '\0';
 
 	// prevent crash if called with base == 1
@@ -1216,26 +1217,26 @@ uint16_t Genie::WriteInhLabel (uint16_t index, unsigned long n, int base) {
 		char c = m - base * n;
 		*--str = c < 10 ? c + '0' : c + 'A' - 10;
 	} while(n);
-				
+
     WriteInhLabel(index, str);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, unsigned int n) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, unsigned int n) {
 	WriteInhLabel (index, (unsigned long) n);
 	return 0;
 }
 
-uint16_t Genie::WriteInhLabel (uint16_t index, unsigned n, int base) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, unsigned n, int base) {
 	WriteInhLabel (index, (unsigned long) n, base);
 	return 0;
 }
 
 
-uint16_t Genie::WriteInhLabel (uint16_t index, double number, int digits) { 
+uint16_t Genie::WriteInhLabel (uint16_t index, double number, int digits) {
 	char buf[8 * sizeof(long) + 1]; // Assumes 8-bit chars plus zero byte.
 	char *str = &buf[sizeof(buf) - 1];
-	*str = '\0';  
+	*str = '\0';
 
 	double number2 = number;
 	if (number < 0.0)
@@ -1262,13 +1263,13 @@ uint16_t Genie::WriteInhLabel (uint16_t index, double number, int digits) {
 	int toPrint = int(remainder);
 	char c = toPrint + 48;
 	*str++ = c;
-	remainder -= toPrint; 
+	remainder -= toPrint;
 	}
 	str = &buf[sizeof(buf) - 1 - digits];
 	if (digits > 0) {
 	*--str = '.';
 	}
-	// Extract the integer part of the number and print it  
+	// Extract the integer part of the number and print it
 	do {
 	unsigned long m = int_part;
 	int_part /= 10;
@@ -1299,6 +1300,11 @@ uint16_t Genie::WriteInhLabel (uint16_t index, double n){
 //
 void Genie::AttachEventHandler (UserEventHandlerPtr handler) {
     UserHandler = handler;
+}
+
+void Genie::AttachEventHandler(UserEventHandlerPtrDeprecated userHandler) {
+    UserHandler =
+        std::function<std::remove_pointer_t<UserEventHandlerPtrDeprecated>>(userHandler);
 }
 
 /////////////////// AttachMagicByteReader //////////////////////
@@ -1402,4 +1408,3 @@ uint16_t Genie::WriteMagicDBytes (uint16_t index, uint16_t *shorts, uint16_t len
     PushLinkState(GENIE_LINK_WFAN);
     return 0;
 }
-

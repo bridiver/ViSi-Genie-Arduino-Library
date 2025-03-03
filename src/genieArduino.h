@@ -51,6 +51,8 @@
 
 #include <inttypes.h>
 
+#include <functional>
+
 #include <stdint.h>
 
 #ifndef genieArduino_h
@@ -129,7 +131,7 @@
 #define GENIE_OBJ_ISMARTGAUGE           35 // Retained for backwards compatibility, however Users should use SMARTGAUGE instead of ISMARTGAUGE
 #define GENIE_OBJ_ISMARTSLIDER          36 // Retained for backwards compatibility, however Users should use SMARTSLIDER instead of ISMARTSLIDER
 #define GENIE_OBJ_ISMARTKNOB            37 // Retained for backwards compatibility, however Users should use SMARTKNOB instead of ISMARTKNOB
-// Comment end																																	  			  
+// Comment end
 #define GENIE_OBJ_ILED_DIGITS_H         38
 #define GENIE_OBJ_IANGULAR_METER        39
 #define GENIE_OBJ_IGAUGE                40
@@ -215,7 +217,8 @@ struct EventQueueStruct {
     uint8_t        n_events;
 };
 
-typedef void        (*UserEventHandlerPtr) (void);
+typedef std::function<void()> UserEventHandlerPtr;
+typedef void        (*UserEventHandlerPtrDeprecated) (void);
 typedef void        (*UserBytePtr)(uint8_t, uint8_t);
 typedef void        (*UserDoubleBytePtr)(uint8_t, uint8_t);
 
@@ -248,7 +251,7 @@ public:
 	uint16_t	WriteStr			(uint16_t index, const __FlashStringHelper *ifsh);
 #endif
 	uint16_t	WriteStr			(uint16_t index, double n, int digits);
-	uint16_t	WriteStr			(uint16_t index, double n);	
+	uint16_t	WriteStr			(uint16_t index, double n);
     uint16_t    WriteStrU           (uint16_t index, uint16_t *string);
 
     uint16_t    WriteInhLabel       (uint16_t index);
@@ -266,13 +269,14 @@ public:
 	uint16_t	WriteInhLabel		(uint16_t index, const __FlashStringHelper *ifsh);
 #endif
 	uint16_t	WriteInhLabel		(uint16_t index, double n, int digits);
-	uint16_t	WriteInhLabel		(uint16_t index, double n);	
+	uint16_t	WriteInhLabel		(uint16_t index, double n);
 
     bool        EventIs             (genieFrame * e, uint8_t cmd, uint8_t object, uint8_t index);
     uint16_t    GetEventData        (genieFrame * e);
     bool        DequeueEvent        (genieFrame * buff);
     uint16_t    DoEvents            (bool DoHandler = true);
-    void        AttachEventHandler  (UserEventHandlerPtr userHandler);
+    void        AttachEventHandler(UserEventHandlerPtr userHandler);
+    void        AttachEventHandler  (UserEventHandlerPtrDeprecated userHandler);
     void        AttachMagicByteReader (UserBytePtr userHandler);
     void        AttachMagicDoubleByteReader (UserDoubleBytePtr userHandler);
     void        pulse               (int pin);
@@ -300,7 +304,7 @@ private:
     void        FatalError          (void);
     void        FlushSerialInput    (void);
     void        Resync              (void);
-	
+
 
     //////////////////////////////////////////////////////////////
     // A structure to hold up to MAX_GENIE_EVENTS events receive
